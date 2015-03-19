@@ -5,15 +5,15 @@ Comprehensive example to show recent capabilities in ROS/Gazebo/MoveIt!
 
 ## Uses
 
-* Bring up the `single_rrbot` (it loads the simulated one by default):
+* Bring up the __single_rrbot__ robot (it loads the simulated one by default):
 
 `roslaunch rrbot_launch bringupRRBOT.launch`
 
-* Move the `single_rrbot` using `ros-controls`
+* Move the __single_rrbot__ robot using `ros-controls`
 
-Open `rqt`, `Plugins`->`Robot Tools` -> `Joint trajectory controller` and move the `single_rrbot` robot.
+Launch `rqt`, and open Plugins->Robot Tools->Joint trajectory controller and move the robot with slides.
 
-* Move the `single_rrbot` using MoveIt!
+* Move the __single_rrbot__ robot using MoveIt!
 
 Load the planning environment:
 
