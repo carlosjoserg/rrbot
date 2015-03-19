@@ -1,0 +1,26 @@
+<launch>
+
+  <!-- GDB functionality -->
+  <arg name="debug" default="false" />
+  <arg unless="$(arg debug)" name="launch_prefix" value="" />
+  <arg     if="$(arg debug)" name="launch_prefix" value="gdb --ex run --args" />
+
+  <arg name="robot_sim" default="true"/>
+  <arg name="robot_name" default="single_rrbot"/>
+
+  <!-- Assume there is a robot_description parameter to avoid dependency on rrbot_description -->
+  <!-- <param name="robot_description" command="$(find xacro)/xacro.py '$(find rrbot_description)/robots/$(arg robot_name).urdf.xacro'" /> -->
+
+  <group if="$(arg robot_sim)">
+    <!-- Load simulation environment and spawn urdf -->
+  </group>
+  <group unless="$(arg robot_sim)">
+    <!-- Load hw interface real settings -->
+    <rosparam file="$(find rrbot_description)/config/hardware.yaml" command="load"/>
+    <!-- Load hardware interface real -->
+    <node name="rrbot_hardware_interface" pkg="rrbot_hw" type="rrbot_hw_real_node"
+          output="screen" launch-prefix="$(arg launch_prefix)"/>
+  </group>
+
+</launch>
+

@@ -1,0 +1,11 @@
+<library path="lib/libdefault_rrbot_hw_sim">
+
+  <class
+    name="rrbot_hw/DefaultRRBOTHWSim"
+    type="rrbot_hw::DefaultRRBOTHWSim"
+    base_class_type="rrbot_hw::RRBOTHWSim">
+    <description>
+      A default custom RRBOT simulation interface.
+    </description>
+  </class>
+</library>

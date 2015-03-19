@@ -1,0 +1,8 @@
+single_rrbot:
+  # Settings for ros_control hardware interface
+  hardware_interface:
+     loop_hz: 10 # hz
+     # CR: Here is my point, can the urdf/transmission specification be used for joint names?
+     joints:
+        - single_rrbot_joint1
+        - single_rrbot_joint2

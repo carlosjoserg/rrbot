@@ -1,0 +1,1 @@
+Just a launch-based package, something like the GUI of the meta-package, or the LUI (Launch User Inteface).

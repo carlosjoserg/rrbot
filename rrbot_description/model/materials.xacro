@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<robot>
+
+  <material name="RRBOT/black">
+    <color rgba="0.0 0.0 0.0 1.0"/>
+  </material>
+
+  <material name="RRBOT/blue">
+    <color rgba="0.0 0.0 0.8 1.0"/>
+  </material>
+
+  <material name="RRBOT/green">
+    <color rgba="0.0 0.8 0.0 1.0"/>
+  </material>
+
+  <material name="RRBOT/grey">
+    <color rgba="0.2 0.2 0.2 1.0"/>
+  </material>
+
+  <material name="RRBOT/orange">
+    <color rgba="${255/255} ${108/255} ${10/255} 1.0"/>
+  </material>
+
+  <material name="RRBOT/brown">
+    <color rgba="${222/255} ${207/255} ${195/255} 1.0"/>
+  </material>
+
+  <material name="RRBOT/red">
+    <color rgba="0.8 0.0 0.0 1.0"/>
+  </material>
+
+  <material name="RRBOT/white">
+    <color rgba="1.0 1.0 1.0 1.0"/>
+  </material>
+
+</robot>

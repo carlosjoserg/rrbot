@@ -1,0 +1,217 @@
+<?xml version="1.0"?>
+<!-- Revolute-Revolute Manipulator -->
+<robot name="rrbot_model" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Constants for robot dimensions -->
+  <xacro:property name="PI" value="3.1415926535897931"/>
+  <xacro:property name="width" value="0.1" /> <!-- Square dimensions (widthxwidth) of beams -->
+  <xacro:property name="height1" value="2" /> <!-- Link 1 -->
+  <xacro:property name="height2" value="1" /> <!-- Link 2 -->
+  <xacro:property name="height3" value="1" /> <!-- Link 3 -->
+  <xacro:property name="camera_link" value="0.05" /> <!-- Size of square 'camera' box -->
+  <xacro:property name="axel_offset" value="0.05" /> <!-- Space btw top of beam and the each joint -->
+
+  <!-- Import your model behavior in Gazebo -->
+  <xacro:include filename="$(find rrbot_description)/model/rrbot.gazebo.xacro" />
+  <!-- Import Rviz colors -->
+  <xacro:include filename="$(find rrbot_description)/model/materials.xacro" />
+
+  <!-- Define your rrbot model -->
+  <xacro:macro name="rrbot" params="parent name *origin">
+
+  <!-- Propagate the name to all elements to make them unique -->
+
+  <joint name="${name}_fixed" type="fixed">
+    <insert_block name="origin"/>
+    <parent link="${parent}"/>
+    <child link="${name}_link1"/>
+  </joint>
+
+  <!-- Base Link -->
+  <link name="${name}_link1">
+    <collision>
+      <origin xyz="0 0 ${height1/2}" rpy="0 0 0"/>
+      <geometry>
+	<box size="${width} ${width} ${height1}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 ${height1/2}" rpy="0 0 0"/>
+      <geometry>
+	<box size="${width} ${width} ${height1}"/>
+      </geometry>
+      <material name="RRBOT/orange"/>
+    </visual>
+
+    <inertial>
+      <origin xyz="0 0 ${height1/2}" rpy="0 0 0"/>
+      <mass value="1"/>
+      <inertia
+	  ixx="1.0" ixy="0.0" ixz="0.0"
+	  iyy="1.0" iyz="0.0"
+	  izz="1.0"/>
+    </inertial>
+  </link>
+
+  <joint name="${name}_joint1" type="revolute">
+    <parent link="${name}_link1"/>
+    <child link="${name}_link2"/>
+    <origin xyz="0 ${width} ${height1 - axel_offset}" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.57" upper="1.57" effort="10" velocity="0.5" />
+    <dynamics damping="0.7"/>
+  </joint>
+
+  <!-- Middle Link -->
+  <link name="${name}_link2">
+    <collision>
+      <origin xyz="0 0 ${height2/2 - axel_offset}" rpy="0 0 0"/>
+      <geometry>
+        <box size="${width} ${width} ${height2}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 ${height2/2 - axel_offset}" rpy="0 0 0"/>
+      <geometry>
+        <box size="${width} ${width} ${height2}"/>
+      </geometry>
+      <material name="RRBOT/black"/>
+    </visual>
+
+    <inertial>
+      <origin xyz="0 0 ${height2/2 - axel_offset}" rpy="0 0 0"/>
+      <mass value="1"/>
+      <inertia
+	  ixx="1.0" ixy="0.0" ixz="0.0"
+	  iyy="1.0" iyz="0.0"
+	  izz="1.0"/>
+    </inertial>
+  </link>
+
+  <joint name="${name}_joint2" type="revolute">
+    <parent link="${name}_link2"/>
+    <child link="${name}_link3"/>
+    <origin xyz="0 ${width} ${height2 - axel_offset*2}" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.57" upper="1.57" effort="10" velocity="0.5" />
+    <dynamics damping="0.7"/>
+  </joint>
+
+  <!-- Top Link -->
+  <link name="${name}_link3">
+    <collision>
+      <origin xyz="0 0 ${height3/2 - axel_offset}" rpy="0 0 0"/>
+      <geometry>
+        <box size="${width} ${width} ${height3}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 ${height3/2 - axel_offset}" rpy="0 0 0"/>
+      <geometry>
+        <box size="${width} ${width} ${height3}"/>
+      </geometry>
+      <material name="RRBOT/orange"/>
+    </visual>
+
+    <inertial>
+      <origin xyz="0 0 ${height3/2 - axel_offset}" rpy="0 0 0"/>
+      <mass value="1"/>
+      <inertia
+	  ixx="1.0" ixy="0.0" ixz="0.0"
+	  iyy="1.0" iyz="0.0"
+	  izz="1.0"/>
+    </inertial>
+  </link>
+
+  <joint name="${name}_hokuyo_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="0 0 ${height3 - axel_offset/2}" rpy="0 0 0"/>
+    <parent link="${name}_link3"/>
+    <child link="${name}_hokuyo_link"/>
+  </joint>
+
+  <!-- Hokuyo Laser -->
+  <link name="${name}_hokuyo_link">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://rrbot_description/model/meshes/hokuyo.dae"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+  </link>
+
+  <joint name="${name}_camera_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="${camera_link} 0 ${height3 - axel_offset*2}" rpy="0 0 0"/>
+    <parent link="${name}_link3"/>
+    <child link="${name}_camera_link"/>
+  </joint>
+
+  <!-- Camera -->
+  <link name="${name}_camera_link">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${camera_link} ${camera_link} ${camera_link}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${camera_link} ${camera_link} ${camera_link}"/>
+      </geometry>
+      <material name="RRBOT/red"/>
+    </visual>
+
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+  </link>
+
+  <transmission name="${name}_tran1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <robotNamespace>${name}</robotNamespace>
+    <joint name="${name}_joint1">
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="${name}_motor1">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="${name}_tran2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <robotNamespace>${name}</robotNamespace>
+    <joint name="${name}_joint2">
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="${name}_motor2">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <!-- Instance your model behavior in Gazebo keeping the name -->
+  <xacro:rrbot_gazebo name="${name}"/>
+
+  </xacro:macro>
+
+</robot>

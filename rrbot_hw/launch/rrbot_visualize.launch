@@ -1,0 +1,10 @@
+<launch>
+
+  <!-- Load example URDF -->
+  <!--param name="robot_description" command="$(find xacro)/xacro.py '$(find rrbot_description)/robots/single_rrbot.urdf.xacro'" /-->
+    
+  <!-- Show in Rviz  -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find rrbot_description)/launch/rrbot.rviz"/>
+
+</launch>
+

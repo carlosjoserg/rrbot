@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<robot name="two_rrbots" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+	<!-- Import your models -->
+	<xacro:include filename="$(find rrbot_description)/model/rrbot.urdf.xacro"/>
+
+	<!-- Build your comprehensive robot -->
+	<link name="world"/>
+
+	<gazebo reference="world">
+		<static>true</static>
+	</gazebo>
+
+	<xacro:rrbot parent="world" name="rrbot1">
+		<origin xyz="0 0.3 0" rpy="0 0 0"/>
+	</xacro:rrbot>
+
+	<xacro:rrbot parent="world" name="rrbot2">
+		<origin xyz="0 -0.3 0" rpy="0 0 0"/>
+	</xacro:rrbot>
+
+</robot>

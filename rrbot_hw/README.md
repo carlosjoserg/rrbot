@@ -1,0 +1,1 @@
+In case you want to develop custom HW interfaces to extend the default ones in `hardware_interface` and in `gazebo_ros_control`

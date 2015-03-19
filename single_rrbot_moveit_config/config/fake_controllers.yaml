@@ -1,0 +1,5 @@
+controller_list:
+  - name: fake_rrbot_controller
+    joints:
+      - single_rrbot_joint1
+      - single_rrbot_joint2

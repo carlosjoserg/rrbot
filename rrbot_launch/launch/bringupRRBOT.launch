@@ -1,0 +1,76 @@
+<launch>
+
+  <!-- Main LUI (launch user interface) -->
+  <!-- for now, you can't load both sim and real simultaneously, one reason is that there is one controller manager for hw_sim and hw_real -->
+  <arg name="robot_sim" default="true"/>
+  <arg name="robot_name" default="single_rrbot"/>
+
+  <!-- GDB functionality -->
+  <arg name="debug" default="false" /> <!-- affects also the simulation -->
+  <arg unless="$(arg debug)" name="launch_prefix" value="" />
+  <arg     if="$(arg debug)" name="launch_prefix" value="gdb --ex run --args" />
+
+  <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+
+  <!-- Global -->
+  <!-- Load the URDF to the parameter server -->
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find rrbot_description)/robots/$(arg robot_name).urdf.xacro'" />
+
+  <!-- merge joint states and publish as /joint_states -->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <param name="use_gui" value="false"/>
+    <!-- listens to each part -->
+    <rosparam param="source_list">[single_rrbot/joint_states]</rosparam>
+  </node>
+
+  <!-- Convert joint states to /tf tranforms -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+  <!-- Load all available controllers -->
+  <rosparam file="$(find rrbot_description)/config/controllers.yaml" command="load"/>
+
+  <!-- this part does not work within the namespace due to the spawn_model script waiting for a service without caring about namespaces -->
+  <group if="$(arg robot_sim)">
+
+    <!-- Load simulation environment -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+      <arg name="world_name" value="$(find rrbot_gazebo)/worlds/rrbot.world"/>
+      <arg name="debug" value="$(arg debug)" />
+      <arg name="gui" value="$(arg gui)" />
+      <arg name="paused" value="$(arg paused)"/>
+      <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+      <arg name="headless" value="$(arg headless)"/>
+    </include>
+
+    <!-- (Load hardware interface sim) Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
+    <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"  args="-urdf -model $(arg robot_name) -param robot_description"/>
+
+  </group>
+
+  <group ns="$(arg robot_name)">
+
+    <!-- Load a copy of the URDF within the namespace-->
+    <param name="robot_description" command="$(find xacro)/xacro.py '$(find rrbot_description)/robots/$(arg robot_name).urdf.xacro'"/>
+
+    <group unless="$(arg robot_sim)">
+
+      <!-- Load hw interface real settings -->
+      <rosparam file="$(find rrbot_description)/config/hardware.yaml" command="load"/>
+
+      <!-- Load hardware interface real -->
+      <node name="rrbot_hardware_interface" pkg="rrbot_hw" type="rrbot_hw_real_node"
+            output="screen" launch-prefix="$(arg launch_prefix)"/>
+
+    </group>
+
+    <!-- Load controller manager -->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+	  output="screen" args="joint_state_controller position_trajectory_controller"/>
+
+  </group>
+
+</launch>

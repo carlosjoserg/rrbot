@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<robot name="single_rrbot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+	<!-- Import your models -->
+	<xacro:include filename="$(find rrbot_description)/model/rrbot.urdf.xacro"/>
+
+	<!-- Build your comprehensive robot -->
+	<link name="world"/>
+
+	<gazebo reference="world">
+		<static>true</static>
+	</gazebo>
+
+	<xacro:rrbot parent="world" name="single_rrbot">
+		<origin xyz="0 0 0" rpy="0 0 0"/>
+	</xacro:rrbot>
+
+</robot>

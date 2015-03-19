@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package>
+  <name>rrbot</name>
+  <version>0.0.0</version>
+  <description>The rrbot package</description>
+
+  <maintainer email="cjrosales@gmail.com">Carlos Rosales</maintainer>
+
+  <license>GPLv2</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- rrbot model -->
+  <run_depend> rrbot_controllers </run_depend>
+  <run_depend> rrbot_description </run_depend>
+  <run_depend> rrbot_gazebo </run_depend>
+  <run_depend> rrbot_hw </run_depend>
+  <run_depend> rrbot_launch </run_depend>
+  <run_depend> rrbot_transmission </run_depend>
+
+  <!-- rrbot instance specific -->
+  <run_depend> single_rrbot_moveit_config </run_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>
