@@ -69,7 +69,7 @@
 
     <!-- Load controller manager -->
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-	  output="screen" args="joint_state_controller position_trajectory_controller"/>
+	  output="screen" args="joint_state_controller trajectory_controller"/>
 
   </group>
 

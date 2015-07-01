@@ -92,37 +92,26 @@ public:
 
     // Resize vectors to our DOF
     num_joints_ = transmissions.size();
+    double num_non_driven_joints = urdf_model->joints_.size() - num_joints_;
+    std::cout << "# OF NON DRIVEN JOINTS: " << num_non_driven_joints << std::endl;
     joint_names_.resize(num_joints_);
     joint_types_.resize(num_joints_);
     joint_lower_limits_.resize(num_joints_);
     joint_upper_limits_.resize(num_joints_);
     joint_effort_limits_.resize(num_joints_);
-    joint_control_methods_.resize(num_joints_);
-    pid_controllers_.resize(num_joints_);
     joint_position_.resize(num_joints_);
     joint_velocity_.resize(num_joints_);
     joint_effort_.resize(num_joints_);
-    joint_effort_command_.resize(num_joints_);
-    joint_position_command_.resize(num_joints_);
-    joint_velocity_command_.resize(num_joints_);
+
+    joint_control_methods_.resize(1);
+    pid_controllers_.resize(1);
+    joint_effort_command_.resize(1);
+    joint_position_command_.resize(1);
+    joint_velocity_command_.resize(1);
 
     // Initialize values
     for(unsigned int j=0; j < num_joints_; j++)
     {
-      // Check that this transmission has one joint
-      if(transmissions[j].joints_.size() == 0)
-      {
-        ROS_WARN_STREAM_NAMED("default_rrbot_hw_sim","Transmission " << transmissions[j].name_
-          << " has no associated joints.");
-        continue;
-      }
-      else if(transmissions[j].joints_.size() > 1)
-      {
-        ROS_WARN_STREAM_NAMED("default_rrbot_hw_sim","Transmission " << transmissions[j].name_
-          << " has more than one joint. Currently the default robot hardware simulation "
-          << " interface only supports one.");
-        continue;
-      }
 
       std::vector<std::string> joint_interfaces = transmissions[j].joints_[0].hardware_interfaces_;
       if (joint_interfaces.empty() &&
@@ -136,29 +125,12 @@ public:
           "The transmission will be properly loaded, but please update " <<
           "your robot model to remain compatible with future versions of the plugin.");
       }
-      if (joint_interfaces.empty())
-      {
-        ROS_WARN_STREAM_NAMED("default_rrbot_hw_sim", "Joint " << transmissions[j].joints_[0].name_ <<
-          " of transmission " << transmissions[j].name_ << " does not specify any hardware interface. " <<
-          "Not adding it to the robot hardware simulation.");
-        continue;
-      }
-      else if (joint_interfaces.size() > 1)
-      {
-        ROS_WARN_STREAM_NAMED("default_rrbot_hw_sim", "Joint " << transmissions[j].joints_[0].name_ <<
-          " of transmission " << transmissions[j].name_ << " specifies multiple hardware interfaces. " <<
-          "Currently the default robot hardware simulation interface only supports one.");
-        continue;
-      }
 
       // Add data from transmission
       joint_names_[j] = transmissions[j].joints_[0].name_;
       joint_position_[j] = 1.0;
       joint_velocity_[j] = 0.0;
       joint_effort_[j] = 1.0;  // N/m for continuous joints
-      joint_effort_command_[j] = 0.0;
-      joint_position_command_[j] = 0.0;
-      joint_velocity_command_[j] = 0.0;
 
       const std::string& hardware_interface = joint_interfaces.front();
 
@@ -169,39 +141,6 @@ public:
       // Create joint state interface for all joints
       joint_state_interface_.registerHandle(hardware_interface::JointStateHandle(
           joint_names_[j], &joint_position_[j], &joint_velocity_[j], &joint_effort_[j]));
-
-      // Decide what kind of command interface this actuator/joint has
-      hardware_interface::JointHandle joint_handle;
-      if(hardware_interface == "EffortJointInterface")
-      {
-        // Create effort joint interface
-        joint_control_methods_[j] = EFFORT;
-        joint_handle = hardware_interface::JointHandle(joint_state_interface_.getHandle(joint_names_[j]),
-                                                       &joint_effort_command_[j]);
-        effort_joint_interface_.registerHandle(joint_handle);
-      }
-      else if(hardware_interface == "PositionJointInterface")
-      {
-        // Create position joint interface
-        joint_control_methods_[j] = POSITION;
-        joint_handle = hardware_interface::JointHandle(joint_state_interface_.getHandle(joint_names_[j]),
-                                                       &joint_position_command_[j]);
-        position_joint_interface_.registerHandle(joint_handle);
-      }
-      else if(hardware_interface == "VelocityJointInterface")
-      {
-        // Create velocity joint interface
-        joint_control_methods_[j] = VELOCITY;
-        joint_handle = hardware_interface::JointHandle(joint_state_interface_.getHandle(joint_names_[j]),
-                                                       &joint_velocity_command_[j]);
-        velocity_joint_interface_.registerHandle(joint_handle);
-      }
-      else
-      {
-        ROS_FATAL_STREAM_NAMED("default_rrbot_hw_sim","No matching hardware interface found for '"
-          << hardware_interface );
-        return false;
-      }
 
       // Get the gazebo joint that corresponds to the robot joint.
       // ROS_WARN_STREAM_NAMED("default_rrbot_hw_sim", "Getting pointer to gazebo joint: "
@@ -216,43 +155,29 @@ public:
       }
       sim_joints_.push_back(joint);
 
-      registerJointLimits(joint_names_[j], joint_handle, joint_control_methods_[j],
-                          joint_limit_nh, urdf_model,
-                          &joint_types_[j], &joint_lower_limits_[j], &joint_upper_limits_[j],
-                          &joint_effort_limits_[j]);
-      if (joint_control_methods_[j] != EFFORT)
-      {
-        // Initialize the PID controller. If no PID gain values are found, use joint->SetPosition() or
-        // joint->SetVelocity() to control the joint.
-        const ros::NodeHandle nh(model_nh, robot_namespace + "/rrbot_hw/pid_gains/" +
-                                 joint_names_[j]);
-        if (pid_controllers_[j].init(nh, true))
-        {
-          switch (joint_control_methods_[j])
-          {
-            case POSITION:
-              joint_control_methods_[j] = POSITION_PID;
-              break;
-            case VELOCITY:
-              joint_control_methods_[j] = VELOCITY_PID;
-              break;
-          }
-        }
-        else
-        {
-          // joint->SetMaxForce() must be called if joint->SetPosition() or joint->SetVelocity() are
-          // going to be called. joint->SetMaxForce() must *not* be called if joint->SetForce() is
-          // going to be called.
-          joint->SetMaxForce(0, joint_effort_limits_[j]);
-        }
-      }
     }
+
+    joint_effort_command_[0] = 0.0;
+    joint_position_command_[0] = 0.0;
+    joint_velocity_command_[0] = 0.0;
+
+    // Decide what kind of command interface this actuator/joint has
+    hardware_interface::JointHandle joint_handle;
+    
+    // Create position joint interface
+    joint_control_methods_[0] = POSITION;
+    joint_handle = hardware_interface::JointHandle(joint_state_interface_.getHandle(joint_names_[1]),
+                                                   &joint_position_command_[0]);
+    position_joint_interface_.registerHandle(joint_handle);
+
+    registerJointLimits(joint_names_[1], joint_handle, POSITION,
+                    joint_limit_nh, urdf_model,
+                    &joint_types_[1], &joint_lower_limits_[1], &joint_upper_limits_[1],
+                    &joint_effort_limits_[1]);
 
     // Register interfaces
     registerInterface(&joint_state_interface_);
-    registerInterface(&effort_joint_interface_);
     registerInterface(&position_joint_interface_);
-    registerInterface(&velocity_joint_interface_);
 
     return true;
   }
@@ -278,72 +203,18 @@ public:
 
   void writeSim(ros::Time time, ros::Duration period)
   {
-    effort_joint_saturation_interface_.enforceLimits(period);
-    effort_joint_limits_interface_.enforceLimits(period);
+    // effort_joint_saturation_interface_.enforceLimits(period);
+    // effort_joint_limits_interface_.enforceLimits(period);
     position_joint_saturation_interface_.enforceLimits(period);
     position_joint_limits_interface_.enforceLimits(period);
-    velocity_joint_saturation_interface_.enforceLimits(period);
-    velocity_joint_limits_interface_.enforceLimits(period);
+    // velocity_joint_saturation_interface_.enforceLimits(period);
+    // velocity_joint_limits_interface_.enforceLimits(period);
 
-    for(unsigned int j=0; j < num_joints_; j++)
-    {
-      switch (joint_control_methods_[j])
-      {
-        case EFFORT:
-          {
-            const double effort = joint_effort_command_[j];
-            sim_joints_[j]->SetForce(0, effort);
-          }
-          break;
+    // sim_joints_[0]->Update();
+    // sim_joints_[0]->Reset();
+    sim_joints_[1]->SetPosition(0, joint_position_command_[0]);
+    
 
-        case POSITION:
-#if GAZEBO_MAJOR_VERSION > 2
-          sim_joints_[j]->SetPosition(0, joint_position_command_[j]);
-#else
-          sim_joints_[j]->SetAngle(0, joint_position_command_[j]);
-#endif
-          break;
-
-        case POSITION_PID:
-          {
-            double error;
-            switch (joint_types_[j])
-            {
-              case urdf::Joint::REVOLUTE:
-                angles::shortest_angular_distance_with_limits(joint_position_[j],
-                                                              joint_position_command_[j],
-                                                              joint_lower_limits_[j],
-                                                              joint_upper_limits_[j],
-                                                              error);
-                break;
-              case urdf::Joint::CONTINUOUS:
-                error = angles::shortest_angular_distance(joint_position_[j],
-                                                          joint_position_command_[j]);
-                break;
-              default:
-                error = joint_position_command_[j] - joint_position_[j];
-            }
-
-            const double effort_limit = joint_effort_limits_[j];
-            const double effort = clamp(pid_controllers_[j].computeCommand(error, period),
-                                        -effort_limit, effort_limit);
-            sim_joints_[j]->SetForce(0, effort);
-          }
-          break;
-
-        case VELOCITY:
-          sim_joints_[j]->SetVelocity(0, joint_velocity_command_[j]);
-          break;
-
-        case VELOCITY_PID:
-          const double error = joint_velocity_command_[j] - joint_velocity_[j];
-          const double effort_limit = joint_effort_limits_[j];
-          const double effort = clamp(pid_controllers_[j].computeCommand(error, period),
-                                      -effort_limit, effort_limit);
-          sim_joints_[j]->SetForce(0, effort);
-          break;
-      }
-    }
   }
 
 private:

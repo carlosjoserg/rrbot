@@ -39,14 +39,14 @@
     <visual>
       <origin xyz="0 0 ${height1/2}" rpy="0 0 0"/>
       <geometry>
-	<box size="${width} ${width} ${height1}"/>
+        <box size="${width} ${width} ${height1}"/>
       </geometry>
       <material name="RRBOT/orange"/>
     </visual>
 
     <inertial>
       <origin xyz="0 0 ${height1/2}" rpy="0 0 0"/>
-      <mass value="1"/>
+      <mass value="1.0"/>
       <inertia
 	  ixx="1.0" ixy="0.0" ixz="0.0"
 	  iyy="1.0" iyz="0.0"
@@ -59,8 +59,7 @@
     <child link="${name}_link2"/>
     <origin xyz="0 ${width} ${height1 - axel_offset}" rpy="0 0 0"/>
     <axis xyz="0 1 0"/>
-    <limit lower="-1.57" upper="1.57" effort="10" velocity="0.5" />
-    <dynamics damping="0.7"/>
+    <limit lower="0.0" upper="1.57" effort="10" velocity="0.5" />
   </joint>
 
   <!-- Middle Link -->
@@ -82,7 +81,7 @@
 
     <inertial>
       <origin xyz="0 0 ${height2/2 - axel_offset}" rpy="0 0 0"/>
-      <mass value="1"/>
+      <mass value="1.0"/>
       <inertia
 	  ixx="1.0" ixy="0.0" ixz="0.0"
 	  iyy="1.0" iyz="0.0"
@@ -95,8 +94,7 @@
     <child link="${name}_link3"/>
     <origin xyz="0 ${width} ${height2 - axel_offset*2}" rpy="0 0 0"/>
     <axis xyz="0 1 0"/>
-    <limit lower="-1.57" upper="1.57" effort="10" velocity="0.5" />
-    <dynamics damping="0.7"/>
+    <limit lower="0.0" upper="1.57" effort="10" velocity="0.5" />
   </joint>
 
   <!-- Top Link -->
@@ -118,7 +116,7 @@
 
     <inertial>
       <origin xyz="0 0 ${height3/2 - axel_offset}" rpy="0 0 0"/>
-      <mass value="1"/>
+      <mass value="1.0"/>
       <inertia
 	  ixx="1.0" ixy="0.0" ixz="0.0"
 	  iyy="1.0" iyz="0.0"
@@ -191,7 +189,7 @@
     <type>transmission_interface/SimpleTransmission</type>
     <robotNamespace>${name}</robotNamespace>
     <joint name="${name}_joint1">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
     </joint>
     <actuator name="${name}_motor1">
       <mechanicalReduction>1</mechanicalReduction>

@@ -198,7 +198,7 @@ void RRBOTGazeboPlugin::Update()
   ros::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
 
   // Check if we should update the controllers
-  if(sim_period >= control_period_) {
+  //if(sim_period >= control_period_) {
     // Store this simulation time
     last_update_sim_time_ros_ = sim_time_ros;
 
@@ -207,7 +207,7 @@ void RRBOTGazeboPlugin::Update()
 
     // Compute the controller commands
     controller_manager_->update(sim_time_ros, sim_period);
-  }
+  //}
 
   // Update the gazebo model with the result of the controller
   // computation
