@@ -22,7 +22,7 @@
   <!-- Propagate the name to all elements to make them unique -->
 
   <joint name="${name}_fixed" type="fixed">
-    <insert_block name="origin"/>
+    <xacro:insert_block name="origin"/>
     <parent link="${parent}"/>
     <child link="${name}_link1"/>
   </joint>

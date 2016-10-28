@@ -243,7 +243,7 @@ public:
           // joint->SetMaxForce() must be called if joint->SetPosition() or joint->SetVelocity() are
           // going to be called. joint->SetMaxForce() must *not* be called if joint->SetForce() is
           // going to be called.
-          joint->SetMaxForce(0, joint_effort_limits_[j]);
+          joint->SetParam("fmax", 0, joint_effort_limits_[j]);
         }
       }
     }

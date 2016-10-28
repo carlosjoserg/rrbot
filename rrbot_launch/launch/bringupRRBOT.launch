@@ -1,3 +1,4 @@
+<?xml version="1.0" ?>
 <launch>
 
   <!-- Main LUI (launch user interface) -->
@@ -18,7 +19,7 @@
 
   <!-- Global -->
   <!-- Load the URDF to the parameter server -->
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find rrbot_description)/robots/$(arg robot_name).urdf.xacro'" />
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find rrbot_description)/robots/$(arg robot_name).urdf.xacro'" />
 
   <!-- merge joint states and publish as /joint_states -->
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
@@ -54,7 +55,7 @@
   <group ns="$(arg robot_name)">
 
     <!-- Load a copy of the URDF within the namespace-->
-    <param name="robot_description" command="$(find xacro)/xacro.py '$(find rrbot_description)/robots/$(arg robot_name).urdf.xacro'"/>
+    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find rrbot_description)/robots/$(arg robot_name).urdf.xacro'"/>
 
     <group unless="$(arg robot_sim)">
 
